@@ -27,6 +27,8 @@ function getEntries() {
       console.log('****** find entry: ' + path);
     }
   });
+  //剥离jquery到公用库
+  entries['vendors'] = ['jquery'];
   return entries;
 }
 

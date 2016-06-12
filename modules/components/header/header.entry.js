@@ -1,4 +1,3 @@
 require('./header.less');
-document.write("this is a header js. isn't it?");
-var $ = require('jquery');
+document.write("this is a header js. yes!");
 $(".desc").html('jquery test...');

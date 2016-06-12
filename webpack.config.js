@@ -42,9 +42,18 @@ module.exports = {
       chunks: ['index','header'],
       minChunks: Infinity
     }),
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jQuery: 'jquery',
+      'window.jQuery': 'jquery'
+    }),
     // new webpack.optimize.UglifyJsPlugin({
     //   compress: {
-    //     warnings: false
+    //     warnings: false,
+    //     minimize:true
+    //   },
+    //   mangle: {
+    //     except: ['$', 'exports', 'require']
     //   }
     // }),
     // new ExtractTextPlugin('css/[name].css'),
