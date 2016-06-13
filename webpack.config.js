@@ -4,6 +4,11 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var glob = require('glob');
 
+var debug = process.env.NODE_ENV !== 'production';
+//发布目录
+var assetsTarget = debug ? 'dist' : '../assets';
+var htmlTarget = debug ? 'views' : '../WEB-INF/templates';
+
 //获取入口文件
 var entries = getEntry('modules/**/*.entry.js', 'modules/');
 //剥离jquery组件
@@ -14,8 +19,8 @@ var chunks = Object.keys(entries);
 var webpackConfig = {
   entry: entries,
   output: {
-    path: path.join(__dirname, 'dist'),
-    publicPath: '/',
+    path: path.join(__dirname, assetsTarget),
+    publicPath: (debug ? '/' : 'assets/'),
     filename: 'js/[hash:10].[name].js',
     chunkFilename: 'js/[name].[chunkhash:8].js'
   },
@@ -71,7 +76,7 @@ var webpackConfig = {
     inline: true,
     hot: true
   },
-  devtool: "source-map"
+  devtool: (debug ? 'source-map' : '')
 }
 
 //生成html配置
@@ -80,16 +85,14 @@ var pageKeys = Object.keys(pages);
 pageKeys.forEach(function(pathname) {
   if(pathname != 'vendors') {
     var conf = {
-      filename: 'views/' + pathname + '.html',
+      filename: htmlTarget + '/' + pathname + '.html',
       template: pages[pathname][0],
       chunks: ['vendors', pathname],
       minify: {
         removeComments:true
       }
     }
-
     webpackConfig.plugins.push(new HtmlWebpackPlugin(conf));
-
   }
 });
 
