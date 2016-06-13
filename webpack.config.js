@@ -2,14 +2,21 @@ var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
-var autoScan = require('./autoScan');
+var glob = require('glob');
 
-module.exports = {
-  entry: autoScan.getEntries(),
+//获取入口文件
+var entries = getEntry('modules/**/*.entry.js', 'modules/');
+//剥离jquery组件
+entries['vendors'] = ['jquery'];
+
+var chunks = Object.keys(entries);
+
+var webpackConfig = {
+  entry: entries,
   output: {
     path: path.join(__dirname, 'dist'),
     publicPath: '/',
-    filename: 'js/[hash].[name].js',
+    filename: 'js/[hash:10].[name].js',
     chunkFilename: 'js/[name].[chunkhash:8].js'
   },
   module: {
@@ -32,42 +39,30 @@ module.exports = {
       },
       {
         test: /\.html$/,
-        loader: "html?attrs=img:src img:data-src"
+        loader: "html?-minimize&attrs=img:src img:data-src"
       }
     ]
   },
   plugins:[
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendors',
-      chunks: ['index','header'],
-      minChunks: Infinity
+      chunks: chunks,
+      minChunks: 3
     }),
     new webpack.ProvidePlugin({
       $: 'jquery',
       jQuery: 'jquery',
       'window.jQuery': 'jquery'
     }),
-    // new webpack.optimize.UglifyJsPlugin({
-    //   compress: {
-    //     warnings: false,
-    //     minimize:true
-    //   },
-    //   mangle: {
-    //     except: ['$', 'exports', 'require']
-    //   }
-    // }),
-    // new ExtractTextPlugin('css/[name].css'),
-    new ExtractTextPlugin('css/style.[contenthash:9].css'),
-    new HtmlWebpackPlugin({
-      filename: 'views/index.html',
-      template: 'modules/index/index.html',
-      chunks: ['vendors','index']
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      },
+      mangle: {
+        except: ['$', 'exports', 'require']
+      }
     }),
-    new HtmlWebpackPlugin({
-      filename: 'views/fragments/header.html',
-      template: 'modules/components/header/header.html',
-      chunks: ['vendors', 'header']
-    })
+    new ExtractTextPlugin('css/style.[contenthash:9].css')
   ],
   devServer: {
     contentBase: './dist',
@@ -77,4 +72,46 @@ module.exports = {
     hot: true
   },
   devtool: "source-map"
+}
+
+//生成html配置
+var pages = getEntry('modules/**/*.html', 'modules/');
+var pageKeys = Object.keys(pages);
+pageKeys.forEach(function(pathname) {
+  if(pathname != 'vendors') {
+    var conf = {
+      filename: 'views/' + pathname + '.html',
+      template: pages[pathname][0],
+      chunks: ['vendors', pathname],
+      minify: {
+        removeComments:true
+      }
+    }
+
+    webpackConfig.plugins.push(new HtmlWebpackPlugin(conf));
+
+  }
+});
+
+module.exports = webpackConfig;
+
+//扫描入口文件
+function getEntry(globPath, pathDir) {
+    var files = glob.sync(globPath);
+    var entries = {},
+        entry, dirname, basename, pathname, extname;
+
+    for (var i = 0; i < files.length; i++) {
+        entry = files[i];
+        dirname = path.dirname(entry);
+        extname = path.extname(entry);
+        basename = path.basename(entry, extname);
+        pathname = path.join(dirname, basename);
+        pathname = pathDir ? pathname.replace(new RegExp('^' + pathDir), '') : pathname;
+        var filename = basename.split('.')[0];
+        if(extname == '.js')
+          console.log('==== Find entry file ====>>> ' + entry);
+        entries[filename] = ['./' + entry];
+    }
+    return entries;
 }

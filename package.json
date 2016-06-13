@@ -4,7 +4,9 @@
   "description": "",
   "main": "entry.js",
   "scripts": {
-    "clean": "rd/s/q dist",
+    "clean-win": "rd/s/q dist",
+    "publish-win": "set NODE_ENV=prod&&webpack -p --progress --colors",
+    "publish-mac": "export NODE_ENV=prod&&webpack -p --progress --colors",
     "dev": "webpack-dev-server --inline --hot --progress --colors"
   },
   "author": "ruby",
