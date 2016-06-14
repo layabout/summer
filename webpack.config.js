@@ -6,12 +6,12 @@ var glob = require('glob');
 
 var debug = process.env.NODE_ENV !== 'production';
 //发布目录
-var assetsTarget = debug ? 'dist' : '../assets';
-var htmlTarget = debug ? 'views' : '../WEB-INF/templates';
+var ASSETS_TARGET = debug ? 'dist' : '../assets';
+var HTML_TARGET = debug ? 'pages' : '../WEB-INF/templates';
 
 //获取入口文件
 var entries = getEntry('modules/**/*.entry.js', 'modules/');
-//剥离jquery组件
+//剥离公用组件
 entries['vendors'] = ['jquery'];
 
 var chunks = Object.keys(entries);
@@ -19,7 +19,7 @@ var chunks = Object.keys(entries);
 var webpackConfig = {
   entry: entries,
   output: {
-    path: path.join(__dirname, assetsTarget),
+    path: path.join(__dirname, ASSETS_TARGET),
     publicPath: (debug ? '/' : 'assets/'),
     filename: 'js/[hash:10].[name].js',
     chunkFilename: 'js/[name].[chunkhash:8].js'
@@ -59,15 +59,7 @@ var webpackConfig = {
       jQuery: 'jquery',
       'window.jQuery': 'jquery'
     }),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      },
-      mangle: {
-        except: ['$', 'exports', 'require']
-      }
-    }),
-    new ExtractTextPlugin('css/style.[contenthash:9].css')
+    new ExtractTextPlugin('css/style.css')
   ],
   devServer: {
     contentBase: './dist',
@@ -83,10 +75,14 @@ var webpackConfig = {
 var pages = getEntry('modules/**/*.html', 'modules/');
 var pageKeys = Object.keys(pages);
 pageKeys.forEach(function(pathname) {
+
+  var templateUrl = pages[pathname][0];
+  var outputUrl = HTML_TARGET + templateUrl.substring(9);
+
   if(pathname != 'vendors') {
     var conf = {
-      filename: htmlTarget + '/' + pathname + '.html',
-      template: pages[pathname][0],
+      filename: outputUrl,
+      template: templateUrl,
       chunks: ['vendors', pathname],
       minify: {
         removeComments:true
@@ -95,6 +91,19 @@ pageKeys.forEach(function(pathname) {
     webpackConfig.plugins.push(new HtmlWebpackPlugin(conf));
   }
 });
+
+if(!debug) {
+  webpackConfig.plugins.push(
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      },
+      mangle: {
+        except: ['$', 'exports', 'require']
+      }
+    })
+  );
+}
 
 module.exports = webpackConfig;
 

@@ -4,8 +4,8 @@
   "description": "",
   "main": "entry.js",
   "scripts": {
-    "clean-win": "rd/s/q dist",
-    "publish-win": "set NODE_ENV=production&&webpack -p --progress --colors",
+    "clean": "rd/s/q dist",
+    "publish": "set NODE_ENV=production&&webpack -p --progress --colors",
     "publish-mac": "export NODE_ENV=production&&webpack -p --progress --colors",
     "dev": "webpack-dev-server --inline --hot --progress --colors"
   },
