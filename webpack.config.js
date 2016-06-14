@@ -54,12 +54,12 @@ var webpackConfig = {
       chunks: chunks,
       minChunks: 3
     }),
+    new ExtractTextPlugin( "css/[name].[contenthash:8].css"),
     new webpack.ProvidePlugin({
       $: 'jquery',
       jQuery: 'jquery',
       'window.jQuery': 'jquery'
-    }),
-    new ExtractTextPlugin('css/style.css')
+    })
   ],
   devServer: {
     contentBase: './dist',
