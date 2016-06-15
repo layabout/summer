@@ -2,11 +2,12 @@ var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var CleanWebpackPlugin = require('clean-webpack-plugin');
 var glob = require('glob');
 
 var debug = process.env.NODE_ENV !== 'production';
 //发布目录
-var ASSETS_TARGET = debug ? 'dist' : '../assets';
+var ASSETS_TARGET = debug ? 'build' : '../assets';
 var HTML_TARGET = debug ? 'pages' : '../WEB-INF/templates';
 
 //获取入口文件
@@ -20,9 +21,9 @@ var webpackConfig = {
   entry: entries,
   output: {
     path: path.join(__dirname, ASSETS_TARGET),
-    publicPath: (debug ? '/' : 'assets/'),
-    filename: 'js/[hash:10].[name].js',
-    chunkFilename: 'js/[name].[chunkhash:8].js'
+    publicPath: (debug ? '/' : '../../../assets/'),
+    filename: 'js/[name].js',
+    chunkFilename: 'js/[id].chunk.js'
   },
   module: {
     loaders: [
@@ -44,17 +45,22 @@ var webpackConfig = {
       },
       {
         test: /\.html$/,
-        loader: "html?-minimize&attrs=img:src img:data-src"
+        loader: "html?-minimize&attrs=img:src img:data-src img:data-th-src"
       }
     ]
   },
   plugins:[
+    new CleanWebpackPlugin(['build'], {
+      root: 'C:\\Users\\ruby\\Desktop\\webapp\\summer',
+      verbose: true,
+      dry: true  //Do not delete anything, good for testing.
+    }),
     new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendors',
+      name: ['vendors'],
       chunks: chunks,
       minChunks: 3
     }),
-    new ExtractTextPlugin( "css/[name].[contenthash:8].css"),
+    new ExtractTextPlugin( "css/[name].css"),
     new webpack.ProvidePlugin({
       $: 'jquery',
       jQuery: 'jquery',
@@ -62,11 +68,11 @@ var webpackConfig = {
     })
   ],
   devServer: {
-    contentBase: './dist',
+    contentBase: './build',
     host: 'localhost',
     port: 8080,
     inline: true,
-    hot: true
+    hot: true,
   },
   devtool: (debug ? 'source-map' : '')
 }
@@ -84,6 +90,7 @@ pageKeys.forEach(function(pathname) {
       filename: outputUrl,
       template: templateUrl,
       chunks: ['vendors', pathname],
+      hash: true,
       minify: {
         removeComments:true
       }

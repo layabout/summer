@@ -1,5 +1,4 @@
 webpack Demo
 ============
 
-http://semantic-ui.com/
-https://github.com/lcxfs1991/html-res-webpack-plugin/blob/master/README_ZH.md
+基本能够满足项目要求了，感觉webpack这种整体打包方案还是更加适合纯静态页面或者SPA项目。 对于传统MVC项目，前后端配合、js调试、原型页面与java前端模板的转换等各个细节还存在诸多问题。或许这些项目使用gulp更合适一些
